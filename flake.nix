@@ -3,24 +3,37 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # This pins requirements.txt provided by zephyr-nix.pythonEnv.
-    zephyr.url = "github:zmkfirmware/zephyr/v3.5.0+zmk-fixes";
+    zephyr.url = "github:zmkfirmware/zephyr/v4.1.0+zmk-fixes";
     zephyr.flake = false;
 
     # Zephyr sdk and toolchain.
-    zephyr-nix.url = "github:urob/zephyr-nix";
+    zephyr-nix.url = "github:nix-community/zephyr-nix";
     zephyr-nix.inputs.zephyr.follows = "zephyr";
     zephyr-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # West manifest locking; skipping the flake to build its package.nix with
+    # our own nixpkgs and python package set.
+    pin-west.url = "github:urob/pin-west";
+    pin-west.flake = false;
   };
 
-  outputs = { nixpkgs, zephyr-nix, ... }: let
+  outputs = inputs @ { nixpkgs, ... }: let
     systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
     devShells = forAllSystems (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
-        zephyr = zephyr-nix.packages.${system};
-        keymap_drawer = pkgs.python3Packages.callPackage ./nix/keymap-drawer.nix {};
+        zephyr = inputs.zephyr-nix.packages.${system};
+        keymap-drawer = pkgs.python3Packages.callPackage ./nix/keymap-drawer.nix {};
+        pin-west = pkgs.python3Packages.callPackage "${inputs.pin-west}/package.nix" {};
+        dts-format = pkgs.callPackage ./nix/dts-format.nix {
+          dts-linter = pkgs.callPackage ./nix/dts-linter.nix {
+            # Uncomment to build against the pinned dts-lsp instead of the
+            # server bundled with dts-linter.
+            # dts-lsp-server = pkgs.callPackage ./nix/dts-lsp-server.nix {};
+          };
+        };
       in {
         default = pkgs.mkShellNoCC {
           packages =
@@ -36,7 +49,9 @@
               pkgs.just
               pkgs.yq # Make sure yq resolves to python-yq.
 
-              keymap_drawer
+              dts-format
+              keymap-drawer
+              pin-west
 
               # -- Used by just_recipes and west_commands. Most systems already have them. --
               # pkgs.gawk
@@ -55,7 +70,17 @@
           shellHook = ''
             export ZMK_BUILD_DIR=$(pwd)/.build;
             export ZMK_SRC_DIR=$(pwd)/zmk/app;
-          '';
+          ''
+          # Expose libatomic to non-Nix binaries, required by the dts-linter
+          # pre-commit hook. This is linux-only, in Darwin atomics live in
+          # the compiler runtime and LD_LIBRARY_PATH is linux-only anyhow.
+          + (if pkgs.stdenv.isLinux then
+            let libatomic = pkgs.runCommand "libatomic" {} ''
+              mkdir -p $out/lib
+              cp -d ${pkgs.stdenv.cc.cc.lib}/lib/libatomic.so* $out/lib/
+            ''; in ''
+            export LD_LIBRARY_PATH="${libatomic}/lib";
+          '' else "");
         };
       }
     );
