@@ -1,0 +1,16 @@
+if SHIELD_FUJI44_LEFT
+
+config ZMK_KEYBOARD_NAME
+    default "Fuji44"
+
+config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+
+endif
+
+if SHIELD_FUJI44_LEFT || SHIELD_FUJI44_RIGHT
+
+config ZMK_SPLIT
+    default y
+
+endif

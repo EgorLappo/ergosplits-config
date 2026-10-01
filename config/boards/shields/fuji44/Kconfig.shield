@@ -1,0 +1,8 @@
+# Copyright (c) 2020 Pete Johanson
+# SPDX-License-Identifier: MIT
+
+config SHIELD_FUJI44_LEFT
+    def_bool $(shields_list_contains,fuji44_left)
+
+config SHIELD_FUJI44_RIGHT
+    def_bool $(shields_list_contains,fuji44_right)

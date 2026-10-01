@@ -1,0 +1,11 @@
+file_format: "1"
+id: klor
+name: KLOR
+type: shield
+url: https://github.com/GEIGEIGEIST/KLOR
+requires: [pro_micro]
+features:
+  - keys
+siblings:
+  - klor_left
+  - klor_right

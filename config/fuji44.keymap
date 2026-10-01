@@ -1,0 +1,35 @@
+#define CONFIG_WIRELESS
+
+// Same placement as the KLOR: main thumbs on the two innermost keys,
+// backspace / smart-mouse right outside them, outer column unused.
+#define ZMK_BASE_LAYER(name, LT, RT, LM, RM, LB, RB, LH, RH)                   \
+    ZMK_LAYER(                                                                 \
+        name,                                                                  \
+                     XXX LT RT XXX                                             \
+                     XXX LM RM XXX                                             \
+                     XXX LB RB XXX                                             \
+        XXX &kp BSPC LH         RH &smart_mouse XXX                            \
+    )
+
+// Fuji44 = Corne (42.h) with a fourth thumb key per side.
+#include "zmk-helpers/key-labels/42.h"
+#undef LH0
+#undef LH1
+#undef LH2
+#undef RH0
+#undef RH1
+#undef RH2
+#undef THUMBS_L
+#undef THUMBS_R
+#define LH0 39  // left thumb keys
+#define LH1 38
+#define LH2 37
+#define LH3 36
+#define RH0 40  // right thumb keys
+#define RH1 41
+#define RH2 42
+#define RH3 43
+#define THUMBS_L LH0 LH1 LH2 LH3
+#define THUMBS_R RH0 RH1 RH2 RH3
+
+#include "base.keymap"

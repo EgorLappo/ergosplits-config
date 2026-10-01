@@ -1,0 +1,15 @@
+
+#define CONFIG_WIRELESS
+
+// Innermost thumb keys (39, 40) are broken off, hence XXX.
+#define ZMK_BASE_LAYER(name, LT, RT, LM, RM, LB, RB, LH, RH)                   \
+    ZMK_LAYER(                                                                 \
+        name,                                                                  \
+                 LT         RT                                                 \
+            XXX  LM         RM XXX                                             \
+            XXX  LB XXX XXX RB XXX                                             \
+        &kp BSPC LH XXX XXX RH &smart_mouse                                    \
+    )
+
+#include "zmk-helpers/key-labels/klor.h"
+#include "base.keymap"

@@ -1,0 +1,11 @@
+file_format: "1"
+id: fuji44
+name: Fuji44
+type: shield
+url: https://oumae.ru
+requires: [pro_micro]
+features:
+  - keys
+siblings:
+  - fuji44_left
+  - fuji44_right
